@@ -27,3 +27,4 @@ usethis::use_rcpp()
 Rcpp::compileAttributes()
 devtools::document()           # generates NAMESPACE + man/ from roxygen
 
+source("dev/01-init-package.R")
