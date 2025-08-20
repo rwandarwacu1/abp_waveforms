@@ -26,3 +26,4 @@ usethis::use_tidy_description()
 usethis::use_rcpp()
 Rcpp::compileAttributes()
 devtools::document()           # generates NAMESPACE + man/ from roxygen
+
