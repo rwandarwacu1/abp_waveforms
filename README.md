@@ -1,8 +1,8 @@
-# abp_waveforms <a href="https://github.com/rwandarwacu1/abp_waveforms"><img src="https://img.shields.io/badge/github-abp__waveforms-blue?logo=github" alt="GitHub"></a>
+# abpwaveforms <a href="https://github.com/rwandarwacu1/abp_waveforms"><img src="https://img.shields.io/badge/github-abp__waveforms-blue?logo=github" alt="GitHub"></a>
 
 **Arterial Blood Pressure (ABP), ECG, and PPG waveform feature extraction in R.**
 
-`abp_waveforms` is an R package that provides reproducible, Rcpp-accelerated tools for cardiovascular waveform analysis.  
+`abpwaveforms` is an R package that provides reproducible, Rcpp-accelerated tools for cardiovascular waveform analysis.  
 It is inspired by **BPannotate (MATLAB)** and enables researchers to extract key hemodynamic features from ABP, ECG, and PPG signals.
 
 ---
