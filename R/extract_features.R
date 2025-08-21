@@ -5,12 +5,15 @@
 #' @param fs Numeric. Target sampling rate in Hz (default 200).
 #' @return data.frame of per-beat features.
 #' @export
+#' @importFrom stats approx
 extractFeaturesEnhanced <- function(abp, ppg, ecg, fs = 200) {
   res <- BP_resample(abp, origFs = 1000)
   signal200 <- stats::na.omit(res$newWaveform)
 
   dd <- doubleDerive(signal200)
-  zoi <- rep(FALSE, length(signal200)); zoi[seq(100, length(zoi), by = 200)] <- TRUE
+  # Use the actual upstroke regions as the zone-of-interest:
+  # waveformDDPlus is > 0 when dP/dt > 0 and d2P/dt2 (filtered) > 0
+  zoi <- (dd$waveformDDPlus > 0) & !is.na(dd$waveformDDPlus)
 
   foot <- FixIndex(getFootIndex(dd$waveformDDPlus, zoi))
   peak <- getPeakIndex(signal200, foot)
@@ -21,7 +24,13 @@ extractFeaturesEnhanced <- function(abp, ppg, ecg, fs = 200) {
   foot <- foot[1:(n+1L)]; peak <- peak[1:n]; notch <- notch[1:n]; dicrotic <- dicrotic[1:n]
 
   pulse_pressure <- signal200[peak] - signal200[foot[1:n]]
-  AIx <- (signal200[peak] - signal200[notch]) / pulse_pressure * 100
+
+  # Guard against zero/near-zero pulse pressure or missing notch
+  valid_pp <- is.finite(pulse_pressure) & (pulse_pressure > 1e-3) & is.finite(notch)
+  AIx <- rep(NA_real_, n)
+  AIx[valid_pp] <- (signal200[peak[valid_pp]] - signal200[notch[valid_pp]]) /
+    pulse_pressure[valid_pp] * 100
+
   RWTT <- (notch - foot[1:n]) / fs
   rise_time <- (peak - foot[1:n]) / fs
   pulse_duration <- (foot[2:(n+1L)] - foot[1:n]) / fs
@@ -49,7 +58,7 @@ extractFeaturesEnhanced <- function(abp, ppg, ecg, fs = 200) {
 
   ppg_rise_time <- (peak - foot[1:n]) / fs
   ppg_sys <- ppg[peak]; ppg_dia <- ppg[foot[1:n]]
-  s_d_ratio <- ppg_sys / ppg_dia
+  s_d_ratio <- ifelse(ppg_dia > 1e-6, ppg_sys / ppg_dia, NA_real_)
   dicrotic_timing <- (dicrotic - foot[1:n]) / fs
   dicrotic_amplitude <- ppg[dicrotic] - ppg[foot[1:n]]
 
@@ -70,6 +79,10 @@ extractFeaturesEnhanced <- function(abp, ppg, ecg, fs = 200) {
     seg <- ppg[foot[i]:peak[i]]
     if (length(seg) > 1) max(diff(seg), na.rm = TRUE) * fs else NA_real_
   }, numeric(1))
+
+  AIx[!is.finite(AIx) | AIx < -50 | AIx > 200] <- NA_real_
+  max_dVdt[!is.finite(max_dVdt)] <- NA_real_
+  pulse_pressure[pulse_pressure < 0] <- NA_real_
 
   data.frame(
     pulse_pressure, rise_time, AIx, RWTT, PAT, max_dVdt, HR, pulse_duration,

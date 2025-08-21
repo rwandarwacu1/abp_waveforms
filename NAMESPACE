@@ -3,4 +3,5 @@
 export(extractFeaturesEnhanced)
 export(process_condition)
 importFrom(Rcpp,sourceCpp)
+importFrom(stats,approx)
 useDynLib(abpwaveforms, .registration = TRUE)
