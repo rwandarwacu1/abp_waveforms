@@ -3,3 +3,4 @@
 ^LICENSE\.md$
 ^dev$
 ^victor_workspace _tests_\.R$
+^\.github$
